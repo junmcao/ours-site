@@ -1,0 +1,460 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="robots" content="noindex, nofollow">
+<title>Ours ops</title>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,400;12..96,600;12..96,800&display=swap">
+<style>
+/* Private ops dashboard. The page holds no data and no secrets: it asks for the ops key,
+   keeps it on this device only, and fetches totals from the ops-summary Edge Function.
+   Layout: a plain-language summary first, then short label/value lists, details last. */
+:root {
+  --bg: #FFF1E0; --surface: #FFFFFF; --ink: #0E1240; --muted: #3F4560; --faint: #6A7090; --line: #EBD9C0;
+  --cobalt: #2F4BFF; --on-cobalt: #FFFFFF; --cobalt-soft: #E3E7FF; --tangerine: #FF7A1A;
+  --good: #166534; --good-soft: #DCF5E3; --bad: #B42318; --bad-soft: #FDE4E1; --warn: #7A4F00; --warn-soft: #F8E7C2;
+  --display: "Bricolage Grotesque", "Avenir Next", "Segoe UI", system-ui, sans-serif;
+}
+@media (prefers-color-scheme: dark) { :root:not([data-theme="light"]) {
+  --bg: #0E1240; --surface: #1A2054; --ink: #FFF6EA; --muted: #D2D5EE; --faint: #A9AECF; --line: #313878;
+  --cobalt: #9AAAFF; --on-cobalt: #0E1240; --cobalt-soft: #26306A;
+  --good: #8BF0B0; --good-soft: #143823; --bad: #FF9A90; --bad-soft: #451C1C; --warn: #F7CB72; --warn-soft: #3D2D10; color-scheme: dark } }
+:root[data-theme="dark"] {
+  --bg: #0E1240; --surface: #1A2054; --ink: #FFF6EA; --muted: #D2D5EE; --faint: #A9AECF; --line: #313878;
+  --cobalt: #9AAAFF; --on-cobalt: #0E1240; --cobalt-soft: #26306A;
+  --good: #8BF0B0; --good-soft: #143823; --bad: #FF9A90; --bad-soft: #451C1C; --warn: #F7CB72; --warn-soft: #3D2D10; color-scheme: dark }
+* { box-sizing: border-box }
+html { -webkit-text-size-adjust: 100% }
+body { margin: 0; background: var(--bg); color: var(--ink); font-family: var(--display); font-size: 17px; line-height: 1.5;
+  padding: max(20px, env(safe-area-inset-top, 0px)) 16px max(40px, env(safe-area-inset-bottom, 0px)) }
+main { max-width: 980px; margin: 0 auto; display: flex; flex-direction: column; gap: 20px }
+a { color: var(--cobalt) }
+
+header { display: flex; align-items: center; gap: 10px; flex-wrap: wrap }
+header svg { width: 34px; height: 34px; flex-shrink: 0 }
+h1 { margin: 0; font-size: 24px; font-weight: 800; letter-spacing: -0.02em }
+.spacer { flex: 1 }
+.updated { color: var(--muted); font-size: 15px }
+.meta-line { display: flex; align-items: center; gap: 4px 12px; flex-wrap: wrap; margin-top: -12px }
+.meta-line:empty { display: none }
+.linkish { font: inherit; font-size: 15px; font-weight: 600; background: none; border: none; color: var(--cobalt); padding: 6px 4px; cursor: pointer; min-height: 36px }
+
+h2 { margin: 0 0 12px; font-size: 19px; font-weight: 800; letter-spacing: -0.01em }
+.card { background: var(--surface); border: 1px solid var(--line); border-radius: 20px; padding: 20px }
+.cols { display: grid; gap: 16px; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)) }
+
+/* Summary */
+.summary .headline { display: flex; align-items: center; gap: 12px; font-size: 24px; font-weight: 800; letter-spacing: -0.01em; line-height: 1.2 }
+/* "status-dot", not "dot": a browser extension's global .dot rule made this position: absolute. */
+.summary .status-dot { position: static; width: 36px; height: 36px; border-radius: 50%; display: grid; place-items: center; font-size: 19px; flex-shrink: 0 }
+.summary .status-dot.good { background: var(--good-soft); color: var(--good) } .summary .status-dot.warn { background: var(--warn-soft); color: var(--warn) } .summary .status-dot.bad { background: var(--bad-soft); color: var(--bad) }
+.summary p { margin: 12px 0 0; color: var(--muted); font-size: 18px }
+.summary ul { margin: 14px 0 0; padding: 0; list-style: none; display: flex; flex-direction: column; gap: 8px }
+.summary li { display: flex; gap: 10px; align-items: flex-start; padding: 10px 12px; border-radius: 12px; font-size: 16px }
+.summary li.warn { background: var(--warn-soft); color: var(--ink) } .summary li.bad { background: var(--bad-soft); color: var(--ink) }
+.summary li b { flex-shrink: 0 }
+
+/* Label / value lists */
+.rows { margin: 0; display: flex; flex-direction: column }
+.rows > div { display: flex; justify-content: space-between; align-items: baseline; gap: 12px; padding: 10px 0; border-bottom: 1px solid var(--line) }
+.rows > div:last-child { border-bottom: none; padding-bottom: 0 }
+.rows > div:first-child { padding-top: 0 }
+.rows dt { color: var(--muted) }
+.rows dd { margin: 0; font-weight: 800; font-size: 20px; font-variant-numeric: tabular-nums; text-align: right }
+.rows dd small { display: block; font-size: 14px; font-weight: 400; color: var(--faint) }
+.rows dd.text { font-size: 16px; font-weight: 600 }
+
+.status { display: inline-flex; align-items: center; gap: 6px; font-weight: 600; padding: 3px 10px; border-radius: 999px; font-size: 15px; white-space: nowrap }
+.status.good { color: var(--good); background: var(--good-soft) } .status.bad { color: var(--bad); background: var(--bad-soft) } .status.warn { color: var(--warn); background: var(--warn-soft) }
+.meter { height: 10px; border-radius: 999px; background: var(--cobalt-soft); overflow: hidden; margin: 8px 0 14px }
+.meter span { display: block; height: 100%; background: var(--cobalt); border-radius: 999px }
+.meter.warn span { background: var(--warn) } .meter.bad span { background: var(--bad) }
+.note { color: var(--muted); font-size: 15px; margin: 12px 0 0 }
+
+/* Costs */
+.big { font-size: 40px; font-weight: 800; letter-spacing: -0.02em; line-height: 1 }
+.services { margin-top: 16px; display: flex; flex-direction: column }
+.service { padding: 10px 0; border-top: 1px solid var(--line) }
+.service .top { display: flex; justify-content: space-between; gap: 12px; font-weight: 600 }
+.service .top span:last-child { color: var(--muted); font-weight: 400; text-align: right }
+.service .next { color: var(--faint); font-size: 15px }
+
+/* Growth bars: one series, value on hover/focus and in the table below */
+.bars { display: flex; align-items: flex-end; gap: 8px; height: 140px; padding-top: 22px }
+.bars .bar { flex: 1; display: flex; flex-direction: column; align-items: center; gap: 6px; height: 100%; justify-content: flex-end; position: relative; outline-offset: 4px }
+.bars .bar i { display: block; width: 100%; max-width: 40px; background: var(--cobalt); border-radius: 4px 4px 0 0; min-height: 2px }
+.bars .bar b { font-size: 14px; font-variant-numeric: tabular-nums }
+.bars .bar small { font-size: 13px; color: var(--muted); white-space: nowrap }
+.bars .bar:hover i, .bars .bar:focus i { background: var(--tangerine) }
+
+/* Feedback */
+.feedback { display: flex; flex-direction: column; gap: 12px }
+.fb { border: 1px solid var(--line); border-radius: 14px; padding: 14px 16px }
+.fb .who { font-weight: 800 } .fb .when { color: var(--faint); font-size: 15px }
+.fb .reply { color: var(--muted); font-size: 15px; margin-top: 2px }
+.fb dl { margin: 10px 0 0; display: flex; flex-direction: column; gap: 8px }
+.fb dt { color: var(--faint); font-size: 14px }
+.fb dd { margin: 0; overflow-wrap: anywhere; white-space: pre-wrap }
+.empty { color: var(--muted) }
+
+/* Details */
+details.card > summary { cursor: pointer; font-size: 19px; font-weight: 800; list-style: none; display: flex; justify-content: space-between; align-items: center }
+details.card > summary::-webkit-details-marker { display: none }
+details.card > summary::after { content: "Show"; font-size: 15px; font-weight: 600; color: var(--cobalt) }
+details.card[open] > summary::after { content: "Hide" }
+details.card[open] > summary { margin-bottom: 16px }
+table { width: 100%; border-collapse: collapse; font-size: 16px }
+th { text-align: left; color: var(--muted); font-weight: 600; padding: 6px 8px 6px 0; border-bottom: 1px solid var(--line) }
+td { padding: 9px 8px 9px 0; border-bottom: 1px solid var(--line); vertical-align: top; font-variant-numeric: tabular-nums }
+tr:last-child td { border-bottom: none }
+.chips { display: flex; flex-wrap: wrap; gap: 8px; margin: 6px 0 16px }
+.chips span { background: var(--cobalt-soft); border-radius: 999px; padding: 4px 12px; font-size: 15px }
+.sub-h { font-weight: 600; margin: 0 }
+.links { display: flex; flex-wrap: wrap; gap: 8px }
+.button { font: inherit; font-weight: 600; border-radius: 999px; border: 1.5px solid var(--line); background: var(--surface); color: var(--ink);
+  min-height: 44px; padding: 0 18px; cursor: pointer; text-decoration: none; display: inline-flex; align-items: center }
+.button.primary { background: var(--cobalt); color: var(--on-cobalt); border-color: var(--cobalt) }
+
+#lock { width: 100%; max-width: 440px; margin: 8vh auto 0; display: flex; flex-direction: column; gap: 12px }
+#lock input { font: inherit; padding: 12px 14px; border-radius: 14px; border: 1.5px solid var(--line); background: var(--bg); color: var(--ink) }
+.error { color: var(--bad); font-size: 15px }
+:focus-visible { outline: 3px solid var(--tangerine); outline-offset: 2px }
+[hidden] { display: none !important }
+@media (max-width: 420px) { .summary .headline { font-size: 21px } .big { font-size: 34px } }
+</style>
+</head>
+<body>
+<main>
+  <header>
+    <svg viewBox="0 0 120 120" aria-hidden="true"><path d="M84 47 A30 30 0 1 1 68.3 33.8" fill="none" stroke="var(--cobalt)" stroke-width="16" stroke-linecap="round"/><path d="M92 12 Q92 26 106 26 Q92 26 92 40 Q92 26 78 26 Q92 26 92 12Z" fill="var(--tangerine)"/></svg>
+    <h1>Ours ops</h1>
+    <span class="spacer"></span>
+    <button class="button" id="refresh" hidden>Refresh</button>
+  </header>
+  <div class="meta-line"><span class="updated" id="updated" aria-live="polite"></span><button class="linkish" id="forget" hidden>Forget key</button></div>
+
+  <section id="lock" class="card" aria-labelledby="lock-title">
+    <h2 id="lock-title">Ops key</h2>
+    <p class="note" style="margin:0">Paste the ops key. It stays in this browser only and is sent to the ops-summary function, nowhere else.</p>
+    <input id="key" type="password" autocomplete="off" spellcheck="false" placeholder="ops key" aria-label="Ops key">
+    <button class="button primary" id="unlock">Open dashboard</button>
+    <div class="error" id="lock-error" role="alert"></div>
+  </section>
+
+  <div id="dash" hidden style="display:flex;flex-direction:column;gap:20px">
+    <section class="card summary" aria-labelledby="headline">
+      <div class="headline"><span class="status-dot" id="dot" aria-hidden="true"></span><span id="headline"></span></div>
+      <p id="story"></p>
+      <ul id="attention" aria-label="Needs attention"></ul>
+    </section>
+
+    <section class="card" aria-labelledby="fb-title">
+      <h2 id="fb-title">Feedback</h2>
+      <div class="feedback" id="feedback"></div>
+      <button class="linkish" id="more-feedback" hidden style="margin-top:8px">Show all</button>
+    </section>
+
+    <div class="cols">
+      <section class="card" aria-labelledby="hh-title"><h2 id="hh-title">Households</h2><dl class="rows" id="households"></dl></section>
+      <section class="card" aria-labelledby="pp-title"><h2 id="pp-title">People</h2><dl class="rows" id="people"></dl></section>
+      <section class="card" aria-labelledby="sh-title"><h2 id="sh-title">Invites and sheets</h2><dl class="rows" id="sharing"></dl></section>
+    </div>
+
+    <div class="cols">
+      <section class="card" aria-labelledby="health-title">
+        <h2 id="health-title">Health</h2>
+        <div id="db-line"></div>
+        <div class="meter" id="db-meter" role="meter" aria-label="Database size" aria-valuemin="0" aria-valuemax="100"><span></span></div>
+        <dl class="rows" id="health"></dl>
+      </section>
+      <section class="card" aria-labelledby="costs-title">
+        <h2 id="costs-title">Costs</h2>
+        <div class="big" id="cost-month"></div>
+        <div class="note" style="margin-top:6px" id="cost-per"></div>
+        <div class="services" id="services"></div>
+        <p class="note">Bandwidth and function calls aren't visible from the database: see
+          <a href="https://supabase.com/dashboard/project/rxtkwvplsmxlwycjanwx/settings/billing/usage" target="_blank" rel="noopener">Supabase usage</a>.</p>
+      </section>
+    </div>
+
+    <section class="card" aria-labelledby="growth-title">
+      <h2 id="growth-title">New households per week</h2>
+      <div class="bars" id="weekly" role="img"></div>
+    </section>
+
+    <details class="card">
+      <summary>Details</summary>
+      <p class="sub-h">Scheduled jobs</p>
+      <table id="jobs" style="margin:6px 0 18px"></table>
+      <p class="sub-h">People per household</p>
+      <div class="chips" id="sizes"></div>
+      <p class="sub-h" id="records-title">Stored records</p>
+      <div class="chips" id="kinds"></div>
+      <p class="sub-h">New households per week (table)</p>
+      <table id="weekly-table" style="margin:6px 0 18px"></table>
+      <div class="links">
+        <a class="button" href="https://supabase.com/dashboard/project/rxtkwvplsmxlwycjanwx/reports" target="_blank" rel="noopener">Supabase reports</a>
+        <a class="button" href="https://supabase.com/dashboard/project/rxtkwvplsmxlwycjanwx/logs/explorer" target="_blank" rel="noopener">Supabase logs</a>
+        <a class="button" href="https://github.com/junmcao/ours/actions" target="_blank" rel="noopener">GitHub Actions</a>
+        <a class="button" href="https://github.com/junmcao/ours/issues?q=is%3Aissue+is%3Aopen+label%3Aops" target="_blank" rel="noopener">Open ops issues</a>
+      </div>
+    </details>
+  </div>
+</main>
+
+<script>
+(function () {
+  const ENDPOINT = 'https://rxtkwvplsmxlwycjanwx.supabase.co/functions/v1/ops-summary';
+  const STORE = 'ours-ops-key';
+
+  // What Ours costs to run. Update these when a plan changes; the page does the sums.
+  // monthly is in US dollars; yearly costs are spread over 12 months.
+  const COSTS = [
+    { name: 'Supabase', plan: 'Free', monthly: 0, next: 'Pro is $25/mo: daily backups, 8 GB, no pausing' },
+    { name: 'Apple Developer', plan: 'Not joined', monthly: 0, next: '$99/yr for TestFlight and the App Store' },
+    { name: 'GitHub', plan: 'Free', monthly: 0, next: 'Free for private repos up to 2,000 Actions minutes/mo' },
+    { name: 'Google Play', plan: 'Not joined', monthly: 0, next: '$25 once, if Android happens' },
+    { name: 'Domain', plan: 'github.io', monthly: 0, next: 'About $15/yr for your own' },
+  ];
+  // Supabase Free plan limit for the database meter.
+  const FREE_DATABASE_BYTES = 500 * 1024 * 1024;
+  const FEEDBACK_SHOWN = 5;
+
+  const $ = (id) => document.getElementById(id);
+  const fmt = new Intl.NumberFormat();
+  const when = (iso) => iso ? new Date(iso).toLocaleString(undefined, { month: 'short', day: 'numeric', hour: 'numeric', minute: '2-digit' }) : '–';
+  const ago = (iso) => {
+    if (!iso) return 'never';
+    const mins = Math.max(0, Math.round((Date.now() - new Date(iso)) / 60000));
+    if (mins < 2) return 'just now';
+    if (mins < 60) return mins + ' min ago';
+    if (mins < 48 * 60) return Math.round(mins / 60) + ' hours ago';
+    return Math.round(mins / 1440) + ' days ago';
+  };
+  const plural = (n, one, many) => fmt.format(n) + ' ' + (n === 1 ? one : many);
+  const mb = (b) => (b / 1048576).toFixed(b < 10485760 ? 1 : 0) + ' MB';
+  const usd = (n) => n.toLocaleString(undefined, { style: 'currency', currency: 'USD', minimumFractionDigits: n % 1 ? 2 : 0 });
+  // Every value from the server is written with textContent: feedback is untrusted input.
+  const el = (tag, cls, text) => { const n = document.createElement(tag); if (cls) n.className = cls; if (text != null) n.textContent = text; return n; };
+
+  function readKey() { try { return localStorage.getItem(STORE) || ''; } catch { return ''; } }
+  function saveKey(k) { try { localStorage.setItem(STORE, k); } catch {} }
+  function forgetKey() { try { localStorage.removeItem(STORE); } catch {} }
+
+  let timer;
+  let showAllFeedback = false;
+  let lastData = null;
+
+  async function load(key) {
+    $('updated').textContent = 'Loading…';
+    let res;
+    try {
+      res = await fetch(ENDPOINT, { method: 'POST', headers: { 'x-ops-key': key } });
+    } catch {
+      $('updated').textContent = "Couldn't reach Supabase";
+      return false;
+    }
+    if (res.status === 401) { forgetKey(); showLock('That key was not accepted.'); return false; }
+    if (!res.ok) { $('updated').textContent = 'Server error ' + res.status; return false; }
+    lastData = await res.json();
+    render(lastData);
+    $('lock').hidden = true; $('dash').hidden = false; $('refresh').hidden = false; $('forget').hidden = false;
+    clearInterval(timer);
+    timer = setInterval(() => load(key), 5 * 60 * 1000);
+    return true;
+  }
+
+  function showLock(message) {
+    clearInterval(timer);
+    $('dash').hidden = true; $('refresh').hidden = true; $('forget').hidden = true; $('lock').hidden = false;
+    $('lock-error').textContent = message || '';
+    $('updated').textContent = '';
+    $('key').value = '';
+    $('key').focus();
+  }
+
+  function status(kind, text) {
+    const icon = kind === 'good' ? '✓' : kind === 'bad' ? '✕' : '!';
+    const s = el('span', 'status ' + kind);
+    s.append(el('span', null, icon), el('span', null, text));
+    return s;
+  }
+
+  /** One label/value row. `value` is a string or a node; `sub` is an optional small line. */
+  function row(list, label, value, sub, isText) {
+    const wrap = el('div');
+    const dd = el('dd', isText ? 'text' : null);
+    if (typeof value === 'string') dd.append(el('span', null, value)); else dd.append(value);
+    if (sub) dd.append(el('small', null, sub));
+    wrap.append(el('dt', null, label), dd);
+    list.append(wrap);
+  }
+
+  /** Things worth a look, worst first. Each is [kind, title, detail]. */
+  function attention(d) {
+    const items = [];
+    const used = d.database.bytes / FREE_DATABASE_BYTES;
+    if (used > 0.9) items.push(['bad', 'Database nearly full', mb(d.database.bytes) + ' of 500 MB. Upgrade to Pro or clean up.']);
+    else if (used > 0.7) items.push(['warn', 'Database getting full', mb(d.database.bytes) + ' of 500 MB.']);
+    for (const j of d.jobs || []) {
+      if (j.failures_7d > 0) items.push(['bad', 'Job failing: ' + j.job, plural(j.failures_7d, 'failed run', 'failed runs') + ' this week.']);
+    }
+    const last = d.records.last_change;
+    if (last && Date.now() - new Date(last) > 5 * 864e5) items.push(['warn', 'Quiet for ' + ago(last).replace(' ago', ''), 'The free plan pauses the project after 7 days with no activity.']);
+    if (d.invites.failed_attempts_24h > 50) items.push(['warn', 'Many wrong invite codes', fmt.format(d.invites.failed_attempts_24h) + ' in the last day. Someone may be guessing.']);
+    return items.sort((a, b) => (a[0] === 'bad' ? 0 : 1) - (b[0] === 'bad' ? 0 : 1));
+  }
+
+  function render(d) {
+    $('updated').textContent = 'Updated ' + ago(d.generated_at);
+    const h = d.households, p = d.people;
+    const weekAgo = Date.now() - 7 * 864e5;
+    const feedbackThisWeek = (d.feedback || []).filter((f) => new Date(f.created_at) > weekAgo).length;
+
+    // Summary: the headline, one sentence, and anything that needs a look.
+    const issues = attention(d);
+    const worst = issues.length ? issues[0][0] : 'good';
+    $('dot').className = 'status-dot ' + worst;
+    $('dot').textContent = worst === 'good' ? '✓' : worst === 'bad' ? '✕' : '!';
+    $('headline').textContent = issues.length ? plural(issues.length, 'thing needs', 'things need') + ' a look' : 'All good';
+    $('story').textContent = h.total
+      ? fmt.format(h.active_7d) + ' of ' + plural(h.total, 'household', 'households') + ' used Ours in the last 7 days. ' +
+        plural(h.new_7d, 'new household', 'new households') + ' and ' + plural(feedbackThisWeek, 'feedback response', 'feedback responses') + ' this week.'
+      : 'No households yet. Share the preview site to get the first testers in.';
+    const list = $('attention'); list.replaceChildren();
+    for (const [kind, title, detail] of issues) {
+      const li = el('li', kind);
+      li.append(el('b', null, kind === 'bad' ? '✕' : '!'));
+      const text = el('span'); text.append(el('b', null, title + '. '), el('span', null, detail));
+      li.append(text); list.append(li);
+    }
+
+    // Feedback, newest first: the first few, then "Show all".
+    const fb = $('feedback'); fb.replaceChildren();
+    const all = d.feedback || [];
+    $('fb-title').textContent = all.length ? 'Feedback (' + fmt.format(d.feedback_total) + ')' : 'Feedback';
+    if (!all.length) fb.append(el('div', 'empty', 'No feedback yet. Responses from the preview site show up here.'));
+    for (const f of showAllFeedback ? all : all.slice(0, FEEDBACK_SHOWN)) {
+      const card = el('article', 'fb');
+      const top = el('div');
+      top.append(el('span', 'who', f.name || 'Anonymous'), el('span', 'when', ' · ' + ago(f.created_at)));
+      card.append(top);
+      if (f.contact) card.append(el('div', 'reply', 'Reply to ' + f.contact));
+      const dl = el('dl');
+      for (const [q, a] of Object.entries(f.answers || {})) {
+        const v = Array.isArray(a) ? a.join(', ') : typeof a === 'object' && a !== null ? JSON.stringify(a) : String(a);
+        if (!v) continue;
+        const pair = el('div');
+        const label = q.replace(/[_-]+/g, ' ');
+        pair.append(el('dt', null, label.charAt(0).toUpperCase() + label.slice(1)), el('dd', null, v));
+        dl.append(pair);
+      }
+      card.append(dl);
+      fb.append(card);
+    }
+    $('more-feedback').hidden = showAllFeedback || all.length <= FEEDBACK_SHOWN;
+    $('more-feedback').textContent = 'Show all ' + fmt.format(all.length);
+
+    // Households, people, sharing.
+    const hh = $('households'); hh.replaceChildren();
+    row(hh, 'Total', fmt.format(h.total));
+    row(hh, 'Used this week', fmt.format(h.active_7d), fmt.format(h.active_30d) + ' this month');
+    row(hh, 'New this week', fmt.format(h.new_7d));
+    const pp = $('people'); pp.replaceChildren();
+    row(pp, 'In a household', fmt.format(p.in_households));
+    row(pp, 'Used this week', fmt.format(p.active_7d));
+    row(pp, 'Joined this month', fmt.format(p.joined_30d));
+    row(pp, 'Accounts', fmt.format(p.accounts), fmt.format(p.anonymous) + ' anonymous');
+    const sh = $('sharing'); sh.replaceChildren();
+    row(sh, 'Live invite codes', fmt.format(d.invites.active));
+    row(sh, 'Codes made this month', fmt.format(d.invites.made_30d));
+    row(sh, 'Live spreadsheet links', fmt.format(d.sheets.live_links));
+
+    // Health.
+    const used = d.database.bytes / FREE_DATABASE_BYTES;
+    $('db-line').textContent = 'Database: ' + mb(d.database.bytes) + ' of 500 MB';
+    const meter = $('db-meter');
+    meter.className = 'meter' + (used > 0.9 ? ' bad' : used > 0.7 ? ' warn' : '');
+    meter.setAttribute('aria-valuenow', String(Math.round(used * 100)));
+    meter.firstElementChild.style.width = Math.max(1, Math.min(100, used * 100)) + '%';
+    const health = $('health'); health.replaceChildren();
+    const last = d.records.last_change;
+    const quiet = !last || Date.now() - new Date(last) > 5 * 864e5;
+    row(health, 'Last sync', status(quiet ? 'warn' : 'good', ago(last)));
+    const failures = (d.jobs || []).reduce((n, j) => n + (j.failures_7d || 0), 0);
+    row(health, 'Nightly jobs', status(failures ? 'bad' : 'good', failures ? plural(failures, 'failure', 'failures') : 'No failures'));
+    const attempts = d.invites.failed_attempts_24h;
+    row(health, 'Wrong invite codes today', status(attempts > 50 ? 'warn' : 'good', fmt.format(attempts)));
+    row(health, 'Oldest app allowed', 'Build ' + (d.config.min_supported_build ?? '–'), null, true);
+
+    // Costs.
+    const monthly = COSTS.reduce((n, c) => n + c.monthly, 0);
+    $('cost-month').textContent = usd(monthly) + ' / month';
+    $('cost-per').textContent = h.active_30d
+      ? usd(monthly / h.active_30d) + ' per active household'
+      : 'No active households yet';
+    const services = $('services'); services.replaceChildren();
+    for (const c of COSTS) {
+      const s = el('div', 'service');
+      const top = el('div', 'top');
+      top.append(el('span', null, c.name), el('span', null, c.plan + (c.monthly ? ', ' + usd(c.monthly) + '/mo' : '')));
+      s.append(top, el('div', 'next', c.next));
+      services.append(s);
+    }
+
+    // New households per week: one series, the count above each bar, exact values in Details.
+    const weekly = $('weekly'); weekly.replaceChildren();
+    const weeks = h.weekly_new || [];
+    const max = Math.max(1, ...weeks.map((w) => w.count));
+    weekly.setAttribute('aria-label', weeks.length ? 'New households per week: ' + weeks.map((w) => w.week + ' ' + w.count).join(', ') : 'No new households in the last 8 weeks');
+    if (!weeks.length) weekly.append(el('div', 'empty', 'No new households in the last 8 weeks.'));
+    const table = $('weekly-table'); table.replaceChildren();
+    const head = el('tr'); head.append(el('th', null, 'Week of'), el('th', null, 'New households')); table.append(head);
+    for (const w of weeks) {
+      const label = new Date(w.week + 'T12:00:00').toLocaleDateString(undefined, { month: 'short', day: 'numeric' });
+      const bar = el('div', 'bar'); bar.tabIndex = 0; bar.title = 'Week of ' + label + ': ' + w.count;
+      const i = el('i'); i.style.height = Math.max(2, (w.count / max) * 90) + 'px';
+      bar.append(el('b', null, String(w.count)), i, el('small', null, label));
+      weekly.append(bar);
+      const tr = el('tr'); tr.append(el('td', null, label), el('td', null, String(w.count))); table.append(tr);
+    }
+
+    // Details: jobs, household sizes, records.
+    const jobs = $('jobs'); jobs.replaceChildren();
+    const jh = el('tr'); jh.append(el('th', null, 'Job'), el('th', null, 'Last run'), el('th', null, 'Result')); jobs.append(jh);
+    if (!(d.jobs || []).length) { const tr = el('tr'); const td = el('td', 'empty', 'No scheduled jobs found.'); td.colSpan = 3; tr.append(td); jobs.append(tr); }
+    for (const j of d.jobs || []) {
+      const tr = el('tr'); const res = el('td');
+      res.append(!j.last_run ? status('warn', 'Not run yet') : j.last_status === 'succeeded' ? status('good', 'Succeeded') : status('bad', j.last_status || 'Unknown'));
+      tr.append(el('td', null, j.job), el('td', null, when(j.last_run)), res);
+      jobs.append(tr);
+    }
+    const sizes = $('sizes'); sizes.replaceChildren();
+    const bySize = Object.entries(h.by_size || {});
+    if (!bySize.length) sizes.append(el('span', null, 'None yet'));
+    for (const [size, n] of bySize) sizes.append(el('span', null, (size === '1' ? '1 person' : size + ' people') + ': ' + n));
+    $('records-title').textContent = 'Stored records (' + fmt.format(d.records.total) + ', of which ' + fmt.format(d.records.deleted) + ' are deletion markers)';
+    const kinds = $('kinds'); kinds.replaceChildren();
+    for (const [k, n] of Object.entries(d.records.by_kind || {}).sort((a, b) => b[1] - a[1])) kinds.append(el('span', null, k + ': ' + fmt.format(n)));
+  }
+
+  $('unlock').addEventListener('click', async () => {
+    const key = $('key').value.trim();
+    if (!key) return;
+    $('lock-error').textContent = '';
+    if (await load(key)) saveKey(key);
+  });
+  $('key').addEventListener('keydown', (e) => { if (e.key === 'Enter') $('unlock').click(); });
+  $('refresh').addEventListener('click', () => load(readKey()));
+  $('forget').addEventListener('click', () => { forgetKey(); showLock(); });
+  $('more-feedback').addEventListener('click', () => { showAllFeedback = true; if (lastData) render(lastData); });
+  // Keep "Updated … ago" honest between refreshes.
+  setInterval(() => { if (lastData) $('updated').textContent = 'Updated ' + ago(lastData.generated_at); }, 60 * 1000);
+
+  const saved = readKey();
+  if (saved) load(saved); else showLock();
+})();
+</script>
+</body>
+</html>

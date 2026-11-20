@@ -1,0 +1,522 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="description" content="Ours: chores, shared money and time together for couples and roommates whose schedules don't line up. Early preview.">
+<meta property="og:title" content="Ours, an early preview">
+<meta property="og:description" content="What's ours, sorted. Have a look and tell Jun what you think.">
+<title>Ours preview</title>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,400;12..96,600;12..96,800&display=swap">
+<style>
+/* Layout: brand hero with a live-looking phone, a feature grid, three setup steps, then a feedback card. Ours brand tokens. */
+:root {
+  --bg: #FFF1E0; --surface: #FFFFFF; --ink: #0E1240; --muted: #4E5470; --line: #F0DFC8;
+  --cobalt: #2F4BFF; --on-cobalt: #FFFFFF; --cobalt-soft: #E3E7FF; --person1: #1F33C9;
+  --tangerine: #FF7A1A; --ember: #A84300; --tang-soft: #FFE6D3; --ok: #1E7A44;
+  --display: "Bricolage Grotesque", "Avenir Next", "Segoe UI", system-ui, sans-serif;
+  --body: "Bricolage Grotesque", "Avenir Next", "Segoe UI", system-ui, sans-serif;
+  --radius: 22px;
+}
+@media (prefers-color-scheme: dark) { :root:not([data-theme="light"]) {
+  --bg: #0E1240; --surface: #1C2257; --ink: #FFF1E0; --muted: #A9AECF; --line: #2C3270;
+  --cobalt: #8FA0FF; --on-cobalt: #0E1240; --cobalt-soft: #1E2A5A; --person1: #B8C3FF;
+  --tangerine: #FF7A1A; --ember: #FF9A55; --tang-soft: #3A2414; --ok: #6FD39A; color-scheme: dark } }
+:root[data-theme="dark"] {
+  --bg: #0E1240; --surface: #1C2257; --ink: #FFF1E0; --muted: #A9AECF; --line: #2C3270;
+  --cobalt: #8FA0FF; --on-cobalt: #0E1240; --cobalt-soft: #1E2A5A; --person1: #B8C3FF;
+  --tangerine: #FF7A1A; --ember: #FF9A55; --tang-soft: #3A2414; --ok: #6FD39A; color-scheme: dark }
+
+* { box-sizing: border-box }
+html { -webkit-text-size-adjust: 100% }
+body { margin: 0; padding-top: env(safe-area-inset-top, 0px); padding-bottom: env(safe-area-inset-bottom, 0px) }
+.hp { position: absolute; left: -10000px; width: 1px; height: 1px; overflow: hidden }
+body { background: var(--bg); color: var(--ink); font-family: var(--body); font-size: 17px; line-height: 1.55; -webkit-font-smoothing: antialiased }
+.wrap { max-width: 1080px; margin: 0 auto; padding-left: max(16px, env(safe-area-inset-left, 0px)); padding-right: max(16px, env(safe-area-inset-right, 0px)); padding-block: 40px 64px; display: flex; flex-direction: column; gap: 72px }
+h1, h2, h3 { font-family: var(--display); text-wrap: balance; margin: 0 }
+h2 { font-size: clamp(28px, 4vw, 40px); font-weight: 800; letter-spacing: -0.02em; line-height: 1.1 }
+h3 { font-size: 20px; font-weight: 800; letter-spacing: -0.01em; line-height: 1.25 }
+p { margin: 0 }
+.eyebrow { font-size: 13px; font-weight: 600; letter-spacing: 0.08em; text-transform: uppercase; color: var(--muted) }
+.lede { font-size: clamp(18px, 2.2vw, 21px); color: var(--muted); max-width: 34ch }
+a { color: var(--cobalt) }
+:focus-visible { outline: 3px solid var(--tangerine); outline-offset: 2px; border-radius: 6px }
+
+/* Hero */
+.hero { display: grid; grid-template-columns: minmax(0, 1.15fr) minmax(0, 0.85fr); gap: 48px; align-items: center }
+.brand { display: flex; align-items: center; gap: 2px }
+.brand svg { width: 76px; height: 76px }
+.wordmark { font-family: var(--display); font-weight: 800; font-size: 64px; letter-spacing: -3px; line-height: 1; margin-left: -6px }
+.hero h1 { font-size: clamp(40px, 6vw, 68px); font-weight: 800; letter-spacing: -0.03em; line-height: 1.02; margin-top: 20px }
+.hero h1 em { font-style: normal; color: var(--cobalt) }
+.hero .lede { margin-top: 18px }
+.tags { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 24px }
+.tag { font-size: 14px; font-weight: 600; padding: 6px 12px; border-radius: 999px; background: var(--surface); border: 1px solid var(--line) }
+.tag.hot { background: var(--tangerine); border-color: var(--tangerine); color: #0E1240 }
+.cta { display: inline-flex; align-items: center; gap: 8px; margin-top: 28px; padding: 14px 22px; border-radius: 999px; background: var(--cobalt); color: var(--on-cobalt); font-weight: 600; font-size: 17px; text-decoration: none }
+
+/* Phone */
+.phone { width: 100%; max-width: 340px; justify-self: center; aspect-ratio: 9 / 18.5; border-radius: 46px; background: #0E1240; padding: 12px; box-shadow: 0 30px 60px -30px rgba(14, 18, 64, 0.45) }
+.screen { height: 100%; border-radius: 36px; background: #FFF1E0; color: #0E1240; padding: 30px 16px 16px; display: flex; flex-direction: column; gap: 12px; overflow: hidden; font-size: 13px }
+.screen .hi { font-family: var(--display); font-size: 28px; font-weight: 800; letter-spacing: -0.5px }
+.screen .sub { color: #4E5470; font-size: 12px }
+.bal { background: #2F4BFF; color: #FFF1E0; border-radius: 18px; padding: 14px; display: flex; justify-content: space-between; align-items: flex-end; gap: 8px }
+.bal b { display: block; font-family: var(--display); font-size: 26px; font-weight: 800; letter-spacing: -0.5px; line-height: 1.1 }
+.bal .pill { background: #FF7A1A; color: #0E1240; border-radius: 999px; padding: 6px 12px; font-weight: 600; font-size: 12px; white-space: nowrap }
+.card { background: #FFFFFF; border-radius: 16px; padding: 12px; display: flex; gap: 10px; align-items: center; border: 1px solid #F0DFC8 }
+.av { width: 30px; height: 30px; border-radius: 50%; display: grid; place-items: center; font-weight: 800; font-size: 13px; flex-shrink: 0 }
+.av.s { background: #FFE6D3; color: #A84300 } .av.a { background: #E3E7FF; color: #1F33C9 }
+.row { display: flex; align-items: center; gap: 10px; padding: 8px 0; border-top: 1px solid #F6EBDD }
+.row:first-child { border-top: none }
+.tick { width: 18px; height: 18px; border-radius: 50%; border: 2px solid currentColor; flex-shrink: 0 }
+.chip { margin-left: auto; font-size: 11px; font-weight: 600; padding: 2px 8px; border-radius: 999px }
+.chip.s { background: #FFE6D3; color: #A84300 } .chip.a { background: #E3E7FF; color: #1F33C9 }
+.muted { color: #4E5470 }
+
+/* Real-life strip */
+.strip { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 16px }
+.strip > div { border-top: 3px solid var(--ink); padding-top: 14px; display: flex; flex-direction: column; gap: 6px }
+.strip .who { font-family: var(--display); font-weight: 800; font-size: 22px; letter-spacing: -0.01em }
+.strip p { color: var(--muted); font-size: 16px }
+.shift { display: flex; gap: 4px; margin-top: 4px }
+.shift span { width: 26px; height: 26px; border-radius: 7px; display: grid; place-items: center; font-size: 12px; font-weight: 800 }
+.d { background: var(--tang-soft); color: var(--ember) } .n { background: var(--cobalt); color: var(--on-cobalt) } .o { background: var(--surface); color: var(--muted); border: 1px solid var(--line) }
+
+/* Features */
+.section-head { display: flex; flex-direction: column; gap: 10px; max-width: 640px }
+.features { display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap: 16px; margin-top: 28px }
+.feature { background: var(--surface); border: 1px solid var(--line); border-radius: var(--radius); padding: 22px; display: flex; flex-direction: column; gap: 10px; min-width: 0 }
+.feature svg { width: 30px; height: 30px; stroke: var(--cobalt); fill: none; stroke-width: 1.8; stroke-linecap: round; stroke-linejoin: round }
+.feature p { color: var(--muted); font-size: 16px }
+.feature .soon { align-self: flex-start; font-size: 12px; font-weight: 600; padding: 3px 10px; border-radius: 999px; background: var(--tang-soft); color: var(--ember) }
+.quote { font-family: var(--display); font-weight: 600; color: var(--ink) }
+
+/* Steps */
+.steps { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 16px; margin-top: 28px; counter-reset: step }
+.step { display: flex; flex-direction: column; gap: 8px }
+.step::before { counter-increment: step; content: counter(step); width: 40px; height: 40px; border-radius: 50%; display: grid; place-items: center; background: var(--ink); color: var(--bg); font-family: var(--display); font-weight: 800; font-size: 18px }
+.step p { color: var(--muted); font-size: 16px }
+.privacy { margin-top: 24px; display: flex; gap: 12px; align-items: flex-start; padding: 18px 20px; border-radius: 18px; background: var(--cobalt-soft) }
+.privacy svg { width: 24px; height: 24px; flex-shrink: 0; stroke: var(--cobalt); fill: none; stroke-width: 1.8; stroke-linecap: round; stroke-linejoin: round }
+
+/* Feedback */
+.feedback { background: var(--surface); border: 1px solid var(--line); border-radius: 28px; padding: clamp(20px, 4vw, 40px); display: flex; flex-direction: column; gap: 28px }
+form { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 24px 32px }
+fieldset { border: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: 10px; min-width: 0 }
+.full { grid-column: 1 / -1 }
+legend, label.q { font-weight: 600; font-size: 16px; padding: 0; margin-bottom: 4px }
+.opts { display: flex; flex-wrap: wrap; gap: 8px }
+.opt { position: relative }
+.opt input { position: absolute; opacity: 0; inset: 0; margin: 0; cursor: pointer }
+.opt span { display: inline-block; padding: 9px 14px; border-radius: 999px; border: 1.5px solid var(--line); background: var(--bg); font-size: 15px; cursor: pointer }
+.opt input:checked + span { background: var(--cobalt); border-color: var(--cobalt); color: var(--on-cobalt) }
+.opt input:focus-visible + span { outline: 3px solid var(--tangerine); outline-offset: 2px }
+textarea, input[type=text] { width: 100%; font: inherit; font-size: 16px; color: var(--ink); background: var(--bg); border: 1.5px solid var(--line); border-radius: 14px; padding: 12px 14px; min-height: 48px }
+textarea { min-height: 96px; resize: vertical }
+.scale { display: grid; grid-template-columns: repeat(5, minmax(0, 1fr)); gap: 6px; max-width: 360px }
+.scale .opt span { display: block; text-align: center; padding: 10px 0; border-radius: 12px }
+.scale-ends { display: flex; justify-content: space-between; max-width: 360px; font-size: 13px; color: var(--muted) }
+.actions { display: flex; flex-wrap: wrap; gap: 12px; align-items: center }
+button { font: inherit; font-weight: 600; font-size: 17px; border: none; border-radius: 999px; padding: 14px 22px; cursor: pointer; background: var(--cobalt); color: var(--on-cobalt) }
+button.ghost { background: transparent; color: var(--ink); border: 1.5px solid var(--line) }
+.status { font-size: 15px; color: var(--ok); min-height: 1.5em }
+#preview { display: block; width: 100%; white-space: pre-wrap; font-size: 14px; background: var(--bg); border: 1.5px dashed var(--line); border-radius: 14px; padding: 14px; color: var(--ink) }
+footer { display: flex; flex-wrap: wrap; justify-content: space-between; gap: 12px; color: var(--muted); font-size: 14px; border-top: 1px solid var(--line); padding-top: 20px }
+
+@media (max-width: 820px) {
+  .hero { grid-template-columns: minmax(0, 1fr) }
+  .phone { max-width: 300px }
+  .strip, .steps { grid-template-columns: minmax(0, 1fr) }
+  form { grid-template-columns: minmax(0, 1fr) }
+  .wordmark { font-size: 52px } .brand svg { width: 62px; height: 62px }
+}
+@media (prefers-reduced-motion: no-preference) {
+  .spark { transform-origin: 92px 26px; animation: twinkle 3.2s ease-in-out infinite }
+  @keyframes twinkle { 0%, 70%, 100% { transform: scale(1) rotate(0) } 80% { transform: scale(1.25) rotate(20deg) } }
+}
+</style>
+</head>
+<body>
+
+<div class="wrap">
+
+  <header class="hero">
+    <div>
+      <div class="brand" aria-label="ours">
+        <svg viewBox="0 0 120 120" aria-hidden="true"><path d="M84 47 A30 30 0 1 1 68.3 33.8" fill="none" stroke="var(--cobalt)" stroke-width="16" stroke-linecap="round"/><path class="spark" d="M92 12 Q92 26 106 26 Q92 26 92 40 Q92 26 78 26 Q92 26 92 12Z" fill="var(--tangerine)"/></svg>
+        <span class="wordmark" aria-hidden="true">urs</span>
+      </div>
+      <h1>What's ours, <em>sorted.</em></h1>
+      <p class="lede">Chores, shared money and time together, for couples and roommates whose schedules don't line up. It runs in the background, so it's not one more app to keep up with.</p>
+      <div class="tags">
+        <span class="tag hot">Early preview</span>
+        <span class="tag">iPhone first</span>
+        <span class="tag">Built for shift workers too</span>
+      </div>
+      <a class="cta" href="#feedback">Give 2 minutes of feedback</a>
+    </div>
+
+    <div class="phone" role="img" aria-label="The Ours Home screen: Sam owes you $142.50, Sam is asleep after a night shift until 3:15 PM, you're both free Friday 5 to 11 PM, and this week's chores.">
+      <div class="screen" aria-hidden="true">
+        <div>
+          <div class="sub">Home circle · Fri, Nov 20</div>
+          <div class="hi">Hi, Alex</div>
+        </div>
+        <div class="bal">
+          <div><span>Sam owes you</span><b>$142.50</b></div>
+          <span class="pill">Settle up</span>
+        </div>
+        <div class="card">
+          <span class="av s">S</span>
+          <div><b>Sam · asleep until 3:15 PM</b><div class="muted">After nights. Reminders wait.</div></div>
+        </div>
+        <div class="card" style="background:#E3E7FF;border-color:#E3E7FF">
+          <span class="av a" style="background:#2F4BFF;color:#FFF1E0">♥</span>
+          <div><b>Both free Fri 5–11 PM</b><div class="muted">Sam's first evening off</div></div>
+        </div>
+        <div class="card" style="flex-direction:column;align-items:stretch;gap:0">
+          <div class="row"><span class="tick" style="color:#1F33C9"></span>Take out recycling<span class="chip a">Alex</span></div>
+          <div class="row"><span class="tick" style="color:#A84300"></span>Book vet for Miso<span class="chip s">Sam</span></div>
+          <div class="row"><span class="tick" style="color:#1F33C9"></span>Internet · $65<span class="chip a">Alex</span></div>
+        </div>
+      </div>
+    </div>
+  </header>
+
+  <section aria-labelledby="real-life" style="display:flex;flex-direction:column;gap:24px">
+    <div class="section-head">
+      <span class="eyebrow">Made for real schedules</span>
+      <h2 id="real-life">One of you works 9 to 5. The other works two days, two nights, five off.</h2>
+    </div>
+    <div class="strip">
+      <div>
+        <span class="who">Alex · 9 to 5</span>
+        <p>Home by 5:30 most days, and free on weekends.</p>
+      </div>
+      <div>
+        <span class="who">Sam · 12-hour shifts</span>
+        <div class="shift" aria-label="Sam's rotation: day, day, night, night, then five days off">
+          <span class="d">D</span><span class="d">D</span><span class="n">N</span><span class="n">N</span><span class="o">–</span><span class="o">–</span><span class="o">–</span><span class="o">–</span><span class="o">–</span>
+        </div>
+        <p>Overtime and commute included, and asleep after nights.</p>
+      </div>
+      <div>
+        <span class="who">Ours</span>
+        <p>Keeps chores off Sam's shift days, stays quiet while either of you sleeps, and tells you when you're both free.</p>
+      </div>
+    </div>
+  </section>
+
+  <section aria-labelledby="features">
+    <div class="section-head">
+      <span class="eyebrow">What it does</span>
+      <h2 id="features">Less asking, less keeping score</h2>
+      <p class="lede">Everything is tagged as yours, theirs or both, so nobody has to remember who said they'd do it.</p>
+    </div>
+    <div class="features">
+      <article class="feature">
+        <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 7h11M4 12h8M4 17h11"/><path d="M17 15l2 2 3-4"/><path d="M17 5l2 2 3-4"/></svg>
+        <h3>Chores that fit around shifts</h3>
+        <p>Chores rotate between you and skip shift days and the sleep after nights. Fairness is counted over the whole rotation, not one busy week.</p>
+      </article>
+      <article class="feature">
+        <svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="9"/><path d="M12 3v18"/><path d="M12 12l6.4-6.4"/></svg>
+        <h3>Split what's shared, keep the rest private</h3>
+        <p>50/50 or by income, like 55/45. Spending you mark "Just mine" stays on your phone.</p>
+      </article>
+      <article class="feature">
+        <svg viewBox="0 0 24 24" aria-hidden="true"><rect x="3" y="6" width="18" height="12" rx="2"/><path d="M7 12h6"/><path d="M15 10l2 2-2 2"/></svg>
+        <h3>Settle up in your bank app</h3>
+        <p>One tap opens your own bank for an Interac e-Transfer, with the amount and note ready. Ours never touches your money.</p>
+      </article>
+      <article class="feature">
+        <svg viewBox="0 0 24 24" aria-hidden="true"><rect x="3" y="5" width="18" height="16" rx="2"/><path d="M3 10h18M8 3v4M16 3v4"/><path d="M8 15h8"/></svg>
+        <h3>Together time</h3>
+        <p>Finds the evenings you're both free, across shift patterns and your calendars. Only "busy" is shared, never the details.</p>
+      </article>
+      <article class="feature">
+        <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M20 14.5A8 8 0 1 1 9.5 4a6.5 6.5 0 0 0 10.5 10.5z"/></svg>
+        <h3>Quiet while you sleep</h3>
+        <p>Reminders wait until you're awake, including after a night shift. One morning summary instead of a stream of pings.</p>
+      </article>
+      <article class="feature">
+        <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M6 3h12v18l-3-2-3 2-3-2-3 2z"/><path d="M9 8h6M9 12h6"/></svg>
+        <h3>Scan it or say it</h3>
+        <p>Snap a receipt, or tell Siri <span class="quote">"dinner was $86, split it."</span> Receipts are read on your phone and never uploaded.</p>
+      </article>
+      <article class="feature">
+        <svg viewBox="0 0 24 24" aria-hidden="true"><rect x="3" y="3" width="8" height="8" rx="2"/><rect x="13" y="3" width="8" height="8" rx="2"/><rect x="3" y="13" width="18" height="8" rx="2"/></svg>
+        <h3>Glance, don't open</h3>
+        <p>Home and Lock Screen widgets. Tick off chores without opening the app, and see a countdown to the end of your partner's shift.</p>
+      </article>
+      <article class="feature">
+        <svg viewBox="0 0 24 24" aria-hidden="true"><rect x="3" y="4" width="18" height="16" rx="2"/><path d="M3 9h18M3 14h18M9 4v16"/></svg>
+        <h3>Your spreadsheet, kept up to date</h3>
+        <p>Paste one formula into Google Sheets and your shared costs and chores stay current there, for budgets and charts. "Just mine" spending is never included.</p>
+      </article>
+      <article class="feature">
+        <svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="8" cy="9" r="4"/><circle cx="16" cy="9" r="4"/><circle cx="12" cy="16" r="4"/></svg>
+        <h3>Circles of households</h3>
+        <p>A shared cottage, a family trip, two homes raising the same kids. Each household's share lands in its own Money, and nobody sees your own spending.</p>
+      </article>
+    </div>
+  </section>
+
+  <section aria-labelledby="how">
+    <div class="section-head">
+      <span class="eyebrow">Getting started</span>
+      <h2 id="how">Five minutes, then it runs itself</h2>
+    </div>
+    <div class="steps">
+      <div class="step"><h3>Set up together</h3><p>One of you starts a household and sends a link or QR code. Partners and roommates join the same household; a circle connects a few households.</p></div>
+      <div class="step"><h3>Add your rhythms</h3><p>Pick a work pattern like 9 to 5 or DDNN, connect calendars if you like, and add rent or one bill.</p></div>
+      <div class="step"><h3>Let it run</h3><p>Chores rotate, bills remind the right person, and the balance keeps itself. You just tap done.</p></div>
+    </div>
+    <div class="privacy">
+      <svg viewBox="0 0 24 24" aria-hidden="true"><rect x="5" y="11" width="14" height="10" rx="2"/><path d="M8 11V7a4 4 0 0 1 8 0v4"/></svg>
+      <p>No ads and no bank connections. Your partner only sees what you share. You can export or delete everything from the app.</p>
+    </div>
+  </section>
+
+  <section id="feedback" class="feedback" aria-labelledby="fb-title">
+    <div class="section-head">
+      <span class="eyebrow">Help shape it</span>
+      <h2 id="fb-title">Tell Jun what you think</h2>
+      <p class="lede">Answer what you like and tap <b>Send to Jun</b>. Only Jun can read it.</p>
+    </div>
+
+    <form id="fb" novalidate>
+      <fieldset>
+        <legend>Who do you share a home or responsibilities with?</legend>
+        <div class="opts" data-q="Home">
+          <label class="opt"><input type="checkbox" id="h1" value="Partner"><span>Partner</span></label>
+          <label class="opt"><input type="checkbox" id="h2" value="Roommates"><span>Roommates</span></label>
+          <label class="opt"><input type="checkbox" id="h3" value="Family"><span>Family</span></label>
+          <label class="opt"><input type="checkbox" id="h4" value="Co-parent or shared pet"><span>Co-parent or shared pet</span></label>
+          <label class="opt"><input type="checkbox" id="h5" value="Just me"><span>Just me</span></label>
+        </div>
+      </fieldset>
+
+      <fieldset>
+        <legend>What are your schedules like?</legend>
+        <div class="opts" data-q="Schedules">
+          <label class="opt"><input type="radio" name="sched" id="s1" value="Both regular hours"><span>Both regular hours</span></label>
+          <label class="opt"><input type="radio" name="sched" id="s2" value="One of us works shifts"><span>One of us works shifts</span></label>
+          <label class="opt"><input type="radio" name="sched" id="s3" value="Both irregular"><span>Both irregular</span></label>
+        </div>
+      </fieldset>
+
+      <fieldset>
+        <legend>Which phones do you use?</legend>
+        <div class="opts" data-q="Phones">
+          <label class="opt"><input type="radio" name="phones" id="p1" value="Both iPhone"><span>Both iPhone</span></label>
+          <label class="opt"><input type="radio" name="phones" id="p2" value="One iPhone, one Android"><span>One iPhone, one Android</span></label>
+          <label class="opt"><input type="radio" name="phones" id="p3" value="Both Android"><span>Both Android</span></label>
+        </div>
+      </fieldset>
+
+      <fieldset>
+        <legend>How likely are you to try it?</legend>
+        <div class="scale opts" data-q="Likely to try (1 to 5)">
+          <label class="opt"><input type="radio" name="likely" id="l1" value="1"><span>1</span></label>
+          <label class="opt"><input type="radio" name="likely" id="l2" value="2"><span>2</span></label>
+          <label class="opt"><input type="radio" name="likely" id="l3" value="3"><span>3</span></label>
+          <label class="opt"><input type="radio" name="likely" id="l4" value="4"><span>4</span></label>
+          <label class="opt"><input type="radio" name="likely" id="l5" value="5"><span>5</span></label>
+        </div>
+        <div class="scale-ends"><span>Not for me</span><span>Sign me up</span></div>
+      </fieldset>
+
+      <fieldset class="full">
+        <legend>Which would you actually use?</legend>
+        <div class="opts" data-q="Would use">
+          <label class="opt"><input type="checkbox" id="f1" value="Chores around shifts"><span>Chores around shifts</span></label>
+          <label class="opt"><input type="checkbox" id="f2" value="Shared and private spending"><span>Shared and private spending</span></label>
+          <label class="opt"><input type="checkbox" id="f3" value="Settle up with Interac"><span>Settle up with Interac</span></label>
+          <label class="opt"><input type="checkbox" id="f4" value="Together time"><span>Together time</span></label>
+          <label class="opt"><input type="checkbox" id="f5" value="Quiet hours"><span>Quiet hours</span></label>
+          <label class="opt"><input type="checkbox" id="f6" value="Receipt scan or Siri"><span>Receipt scan or Siri</span></label>
+          <label class="opt"><input type="checkbox" id="f7" value="Widgets"><span>Widgets</span></label>
+          <label class="opt"><input type="checkbox" id="f8" value="Spreadsheet sync"><span>Spreadsheet sync</span></label>
+        </div>
+      </fieldset>
+
+      <fieldset class="full">
+        <label class="q" for="today">How do you handle chores and shared money today?</label>
+        <textarea id="today" data-q="Today" placeholder="Splitwise, a shared note, a spreadsheet, we just talk about it…"></textarea>
+      </fieldset>
+
+      <fieldset class="full">
+        <label class="q" for="missing">What's missing, confusing, or a dealbreaker?</label>
+        <textarea id="missing" data-q="Missing or confusing" placeholder="Anything goes."></textarea>
+      </fieldset>
+
+      <fieldset>
+        <legend>Want an invite to the iPhone beta?</legend>
+        <div class="opts" data-q="Beta invite">
+          <label class="opt"><input type="radio" name="beta" id="b1" value="Yes please"><span>Yes please</span></label>
+          <label class="opt"><input type="radio" name="beta" id="b2" value="Not yet"><span>Not yet</span></label>
+        </div>
+      </fieldset>
+
+      <fieldset>
+        <label class="q" for="name">Your name (so Jun knows who it's from)</label>
+        <input type="text" id="name" data-q="From" autocomplete="name" maxlength="80" placeholder="First name is fine">
+      </fieldset>
+
+      <fieldset class="full">
+        <label class="q" for="contact">How can Jun reply or send the beta invite? (optional)</label>
+        <input type="text" id="contact" data-q="Reply to" autocomplete="email" maxlength="120" placeholder="Email or phone">
+      </fieldset>
+
+      <div class="hp" aria-hidden="true">
+        <label for="website">Leave this empty</label>
+        <input type="text" id="website" tabindex="-1" autocomplete="off">
+      </div>
+    </form>
+
+    <div class="actions">
+      <button type="button" id="send">Send to Jun</button>
+      <button type="button" class="ghost" id="copy">Copy my answers</button>
+      <button type="button" class="ghost" id="clear">Start over</button>
+      <span class="status" id="status" role="status" aria-live="polite"></span>
+    </div>
+    <div>
+      <p class="eyebrow" style="margin-bottom:8px">What you'll send</p>
+      <output id="preview" for="fb" aria-live="off"></output>
+    </div>
+  </section>
+
+  <footer>
+    <span>ours · early preview for friends · 2026</span>
+    <span>iPhone beta via TestFlight, link coming soon · everyone in your household needs an iPhone</span>
+  </footer>
+</div>
+
+<script>
+(function () {
+  const form = document.getElementById('fb');
+  const preview = document.getElementById('preview');
+  const status = document.getElementById('status');
+  const KEY = 'ours-feedback-draft';
+
+  function answers() {
+    const out = [];
+    form.querySelectorAll('[data-q]').forEach(function (el) {
+      const q = el.getAttribute('data-q');
+      let v = '';
+      if (el.matches('textarea, input[type=text]')) v = el.value.trim();
+      else v = Array.from(el.querySelectorAll('input:checked')).map(function (i) { return i.value; }).join(', ');
+      if (v) out.push(q + ': ' + v);
+    });
+    return out;
+  }
+  function message() {
+    const lines = answers();
+    return lines.length ? 'Ours feedback\n' + lines.join('\n') : '';
+  }
+  function render() {
+    const m = message();
+    preview.textContent = m || 'Your answers will appear here as you go.';
+    try { localStorage.setItem(KEY, JSON.stringify(snapshot())); } catch (e) {}
+  }
+  function snapshot() {
+    const s = {};
+    form.querySelectorAll('input, textarea').forEach(function (el) {
+      if (el.type === 'checkbox' || el.type === 'radio') s[el.id] = el.checked; else s[el.id] = el.value;
+    });
+    return s;
+  }
+  function restore() {
+    let s = null;
+    try { s = JSON.parse(localStorage.getItem(KEY) || 'null'); } catch (e) {}
+    if (!s) return;
+    Object.keys(s).forEach(function (id) {
+      const el = document.getElementById(id);
+      if (!el) return;
+      if (el.type === 'checkbox' || el.type === 'radio') el.checked = !!s[id]; else el.value = s[id] || '';
+    });
+  }
+
+  form.addEventListener('input', render);
+  form.addEventListener('change', render);
+  form.addEventListener('submit', function (e) { e.preventDefault(); });
+
+  // Feedback goes to the Ours Supabase project. The key is the public "publishable" key:
+  // the database only lets visitors add feedback, never read it.
+  const FEEDBACK_URL = 'https://rxtkwvplsmxlwycjanwx.supabase.co/rest/v1/feedback';
+  const PUBLISHABLE_KEY = 'sb_publishable_pAaeyX57U-zlz53eDNv_rw_m5oZgPaS';
+  const sendButton = document.getElementById('send');
+
+  function answerObject() {
+    const out = {};
+    form.querySelectorAll('[data-q]').forEach(function (el) {
+      const q = el.getAttribute('data-q');
+      if (q === 'From' || q === 'Reply to') return;
+      let v = '';
+      if (el.matches('textarea, input[type=text]')) v = el.value.trim();
+      else v = Array.from(el.querySelectorAll('input:checked')).map(function (i) { return i.value; }).join(', ');
+      if (v) out[q] = v.slice(0, 2000);
+    });
+    return out;
+  }
+
+  sendButton.addEventListener('click', async function () {
+    const answers = answerObject();
+    if (Object.keys(answers).length === 0) { status.style.color = 'var(--ember)'; status.textContent = 'Answer at least one question first.'; return; }
+    if (document.getElementById('website').value) { status.textContent = 'Sent. Thank you.'; return; }
+    status.style.color = '';
+    status.textContent = 'Sending…';
+    sendButton.disabled = true;
+    try {
+      const response = await fetch(FEEDBACK_URL, {
+        method: 'POST',
+        headers: { 'apikey': PUBLISHABLE_KEY, 'Content-Type': 'application/json', 'Prefer': 'return=minimal' },
+        body: JSON.stringify({
+          source: 'preview-site',
+          answers: answers,
+          name: document.getElementById('name').value.trim().slice(0, 80) || null,
+          contact: document.getElementById('contact').value.trim().slice(0, 120) || null
+        })
+      });
+      if (!response.ok) throw new Error('HTTP ' + response.status);
+      status.textContent = 'Sent. Thank you, Jun will read every word.';
+      try { localStorage.removeItem(KEY); } catch (e) {}
+    } catch (e) {
+      status.style.color = 'var(--ember)';
+      status.textContent = "Couldn't send right now. Tap Copy my answers and text them to Jun instead.";
+      sendButton.disabled = false;
+    }
+  });
+
+  document.getElementById('copy').addEventListener('click', function () {
+    const m = message();
+    if (!m) { status.style.color = 'var(--ember)'; status.textContent = 'Answer at least one question first.'; return; }
+    status.style.color = '';
+    const done = function () { status.textContent = 'Copied. Paste it into a text or email to Jun.'; };
+    const fallback = function () {
+      const range = document.createRange();
+      range.selectNodeContents(preview);
+      const sel = window.getSelection();
+      sel.removeAllRanges(); sel.addRange(range);
+      status.textContent = 'Selected. Copy it, then paste it into a text or email to Jun.';
+    };
+    try {
+      if (navigator.clipboard && navigator.clipboard.writeText) navigator.clipboard.writeText(m).then(done, fallback);
+      else fallback();
+    } catch (e) { fallback(); }
+  });
+
+  document.getElementById('clear').addEventListener('click', function () {
+    form.reset();
+    try { localStorage.removeItem(KEY); } catch (e) {}
+    status.textContent = '';
+    render();
+  });
+
+  restore();
+  render();
+})();
+</script>
+</body>
+</html>
